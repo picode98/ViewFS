@@ -1,5 +1,6 @@
-#include "winapi_headers.h"
-#include "ProjFSBase.h"
+#include "windows/winapi_headers.h"
+#include "windows/ProjFSBase.h"
+#include "windows/NamedPipe.h"
 
 #include <map>
 #include <cassert>
@@ -74,8 +75,24 @@ const std::map<std::wstring, std::string> ProjFSTest::testEntries = { { L"aFile.
                                                                       { L"anotherFile.docx", "This is not really a DOCX." } };
 
 int main() {
-    auto testFS = ProjFSTest();
-    testFS.startVirtualFS();
-    system("pause");
+//    auto testFS = ProjFSTest();
+//    testFS.startVirtualFS();
+//    system("pause");
+
+    try {
+        NamedPipeServer server(TEXT("aPipe"));
+        server.waitForConnection();
+        std::cout << "Connected!" << std::endl;
+
+        while(true)
+        {
+            server << "list_dir\x1f" << "C:\\Program Files\\Python39" << '\n';
+            std::string result = server.readLine();
+            std::cout << result << std::endl;
+        }
+    } catch(const WindowsException& ex)
+    {
+        std::cout << ex.what() << std::endl;
+    }
     return 0;
 }
