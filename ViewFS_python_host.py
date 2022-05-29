@@ -1,18 +1,27 @@
+import argparse
 import pathlib
 import platform
+from os import chdir
+import importlib
 from typing import List
 
 if __name__ == '__main__':
-    import sample_fs_router
+    parser = argparse.ArgumentParser(description='Host for ViewFS Python router scripts')
+    parser.add_argument('--command-pipe', type=str, required=True, help='Path to a pipe from which script commands can'
+                                                                        'be read and results can be written')
+    parser.add_argument('--router-file', type=str, required=True, help='Router Python module to be loaded')
+    args = parser.parse_args()
 
-    pipe_path = '\\\\.\\pipe\\aPipe'  # TODO: Generate a better name for this pipe
+    module_path = pathlib.Path(args.router_file).absolute().resolve()
+    chdir(module_path.parent)
+    router = importlib.import_module(module_path.name.split('.', maxsplit=1)[0])
 
     if platform.system() == 'Windows':
-        with open(pipe_path, 'rb+') as pipe_ref:
+        with open(args.command_pipe, 'rb+') as pipe_ref:
             for command_bytes in pipe_ref:
                 command_parts = [this_chunk.decode('utf8') for this_chunk in command_bytes.split(b'\x1f')]
                 if len(command_parts) == 2 and command_parts[0] == 'list_dir':
-                    result_paths: List[pathlib.Path] = sample_fs_router.enum_dir(pathlib.Path(command_parts[1]))
-                    result_bytes = b'\x1f'.join(str(this_path.resolve()).encode('utf8') for this_path in result_paths)
+                    result_paths: List[pathlib.Path] = router.enum_dir(pathlib.Path(command_parts[1]))
+                    result_bytes = b'\x1f'.join(str(this_path.absolute().resolve()).encode('utf8') for this_path in result_paths)
                     pipe_ref.write(result_bytes + b'\n')
                     pipe_ref.flush()

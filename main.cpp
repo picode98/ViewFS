@@ -1,6 +1,7 @@
 #include "windows/winapi_headers.h"
 #include "windows/ProjFSBase.h"
 #include "windows/NamedPipe.h"
+#include "PythonSubprocessSource.h"
 
 #include <map>
 #include <cassert>
@@ -80,15 +81,13 @@ int main() {
 //    system("pause");
 
     try {
-        NamedPipeServer server(TEXT("aPipe"));
-        server.waitForConnection();
-        std::cout << "Connected!" << std::endl;
+        PythonSubprocessSource dataSource("C:\\Program Files\\Python39\\python.exe", "..\\sample_fs_router.py");
 
-        while(true)
+        auto result = dataSource.enumerateDir("C:\\Users\\saama\\Applications");
+
+        for(const auto& path : result)
         {
-            server << "list_dir\x1f" << "C:\\Program Files\\Python39" << '\n';
-            std::string result = server.readLine();
-            std::cout << result << std::endl;
+            std::cout << path << ", ";
         }
     } catch(const WindowsException& ex)
     {

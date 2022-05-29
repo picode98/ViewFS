@@ -93,7 +93,7 @@ public:
 
         std::wstring winAPIRootPath = UTF8StrToWideStr(rootPath.generic_u8string());
 
-        handleCOMError(CoCreateGuid(&this->instanceID));
+        this->instanceID = newGUID();
         handleWinAPIError(PrjMarkDirectoryAsPlaceholder(winAPIRootPath.c_str(),
                                                         nullptr, nullptr, &this->instanceID), false);
     }

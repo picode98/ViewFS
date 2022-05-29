@@ -17,6 +17,7 @@ class NamedPipeServer {
     HANDLE pipeHandle;
     bool connected = false;
     std::deque<std::string> readBuffer;
+    std::string filename;
 
     std::string extractLineFromBuffer()
     {
@@ -34,9 +35,9 @@ class NamedPipeServer {
     }
 
 public:
-    explicit NamedPipeServer(const tstring& pipeName)
+    explicit NamedPipeServer(const std::string& pipeName) : filename("\\\\.\\pipe\\" + pipeName)
     {
-        this->pipeHandle = CreateNamedPipe((TEXT("\\\\.\\pipe\\") + pipeName).c_str(), PIPE_ACCESS_DUPLEX,
+        this->pipeHandle = CreateNamedPipe(UTF8StringToTString(filename).c_str(), PIPE_ACCESS_DUPLEX,
                                            PIPE_TYPE_BYTE, 1, 0, 0, 0, nullptr);
 
         if(this->pipeHandle == nullptr || this->pipeHandle == INVALID_HANDLE_VALUE) throw getWinAPIError(GetLastError());
@@ -101,6 +102,11 @@ public:
         }
 
         return extractLineFromBuffer();
+    }
+
+    std::string getFilename() const
+    {
+        return this->filename;
     }
 
     ~NamedPipeServer()
