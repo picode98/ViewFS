@@ -91,7 +91,7 @@ public:
             if(ex.code().value() != ERROR_ALREADY_EXISTS) throw;
         }
 
-        std::wstring winAPIRootPath = UTF8StrToWideStr(rootPath.generic_u8string());
+        std::wstring winAPIRootPath = rootPath;
 
         this->instanceID = newGUID();
         handleWinAPIError(PrjMarkDirectoryAsPlaceholder(winAPIRootPath.c_str(),
@@ -115,7 +115,7 @@ public:
         cbTable.GetPlaceholderInfoCallback = &ProjFSBase::getPlaceholderInfoCBHelper;
         cbTable.GetFileDataCallback = &ProjFSBase::fileInfoRequestCBHelper;
 
-        handleWinAPIError(PrjStartVirtualizing(UTF8StrToWideStr(rootPath.generic_u8string()).c_str(), &cbTable, this, nullptr, &this->instanceHandle), false);
+        handleWinAPIError(PrjStartVirtualizing(UTF8StrToWideStr(rootPath.string()).c_str(), &cbTable, this, nullptr, &this->instanceHandle), false);
     }
 
     virtual HRESULT OnDirectoryEnumerationStart(

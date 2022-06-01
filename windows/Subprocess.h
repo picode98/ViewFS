@@ -19,7 +19,7 @@ class Subprocess {
     static tstring getCommandLine(const std::filesystem::path& executablePath, const std::vector<std::string>& args)
     {
         std::stringstream builder;
-        builder << '\"' << executablePath.u8string() << '\"';
+        builder << '\"' << executablePath.string() << '\"';
 
         for(const auto& arg : args)
         {
@@ -47,7 +47,7 @@ public:
         {
             SECURITY_ATTRIBUTES inheritHandle = { sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE };
 
-            startupInfo.hStdOutput = startupInfo.hStdError = CreateFile(UTF8StringToTString(outputLogPath->u8string()).c_str(),
+            startupInfo.hStdOutput = startupInfo.hStdError = CreateFile(UTF8StringToTString(outputLogPath->string()).c_str(),
                                                                         FILE_APPEND_DATA,
                                                                         FILE_SHARE_READ | FILE_SHARE_WRITE,
                                                                         &inheritHandle,
@@ -61,7 +61,7 @@ public:
         }
 
         SetLastError(ERROR_SUCCESS);
-        CreateProcess(UTF8StringToTString(executablePath.u8string()).c_str(), commandLine.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startupInfo,
+        CreateProcess(UTF8StringToTString(executablePath.string()).c_str(), commandLine.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startupInfo,
                       &newProcInfo);
         handleWinAPIError(ERROR_SUCCESS);
 

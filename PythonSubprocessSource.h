@@ -9,8 +9,9 @@
 #include <filesystem>
 
 #include "PlatformUtils.h"
+#include "IFileSource.h"
 
-class PythonSubprocessSource {
+class PythonSubprocessSource : public IFileSource {
     NamedPipeServer commandPipe;
     Subprocess pythonProc;
 
@@ -18,14 +19,14 @@ public:
     PythonSubprocessSource(const std::filesystem::path& pathToPythonExecutable, const std::filesystem::path& routerFile)
         : commandPipe("viewfs-python-" + GUIDToString(newGUID())),
           pythonProc(pathToPythonExecutable, { "..\\ViewFS_python_host.py", "--command-pipe=" + commandPipe.getFilename(),
-                                                    "--router-file=" + routerFile.u8string()})
+                                                    "--router-file=" + routerFile.string()})
     {
         commandPipe.waitForConnection();
     }
 
     std::vector<std::filesystem::path> enumerateDir(const std::filesystem::path& dirPath)
     {
-        commandPipe << "list_dir\x1f" << dirPath.u8string() << '\n';
+        commandPipe << "list_dir\x1f" << dirPath.string() << '\n';
         std::string result = commandPipe.readLine();
         return mapVector<std::string, std::filesystem::path>(split(result, "\x1f"), [](const auto& strPath) { return std::filesystem::path(strPath); });
     }

@@ -1,6 +1,7 @@
 #include "windows/winapi_headers.h"
 #include "windows/ProjFSBase.h"
 #include "windows/NamedPipe.h"
+#include "windows/ProjFSFrontend.h"
 #include "PythonSubprocessSource.h"
 
 #include <map>
@@ -83,12 +84,10 @@ int main() {
     try {
         PythonSubprocessSource dataSource("C:\\Program Files\\Python39\\python.exe", "..\\sample_fs_router.py");
 
-        auto result = dataSource.enumerateDir("C:\\Users\\saama\\Applications");
+        ProjFSFrontend frontend(L".\\test_fs", dataSource);
+        frontend.startVirtualFS();
 
-        for(const auto& path : result)
-        {
-            std::cout << path << ", ";
-        }
+        system("pause");
     } catch(const WindowsException& ex)
     {
         std::cout << ex.what() << std::endl;
