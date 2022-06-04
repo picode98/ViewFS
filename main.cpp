@@ -82,7 +82,7 @@ int main() {
 //    system("pause");
 
     try {
-        PythonSubprocessSource dataSource("C:\\Program Files\\Python39\\python.exe", "..\\sample_fs_router.py");
+        PythonSubprocessSource dataSource(L".\\test_fs", "C:\\Program Files\\Python39\\python.exe", "..\\sample_fs_router.py");
 
         ProjFSFrontend frontend(L".\\test_fs", dataSource);
         frontend.startVirtualFS();

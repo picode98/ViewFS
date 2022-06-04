@@ -10,7 +10,7 @@
 
 std::string replaceAll(const std::string& src, const std::string& key, const std::string& replacement);
 
-std::vector<std::string> split(const std::string& src, const std::string& delim);
+std::vector<std::string> split(const std::string &src, const std::string &delim, bool keepEmpty = false);
 
 template<typename SrcType, typename DstType>
 std::vector<DstType> mapVector(const std::vector<SrcType>& src, std::function<DstType(const SrcType&)> mapper)

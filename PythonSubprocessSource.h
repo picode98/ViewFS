@@ -16,19 +16,30 @@ class PythonSubprocessSource : public IFileSource {
     Subprocess pythonProc;
 
 public:
-    PythonSubprocessSource(const std::filesystem::path& pathToPythonExecutable, const std::filesystem::path& routerFile)
+    PythonSubprocessSource(const std::filesystem::path& virtRoot, const std::filesystem::path& pathToPythonExecutable,
+                           const std::filesystem::path& routerFile)
         : commandPipe("viewfs-python-" + GUIDToString(newGUID())),
-          pythonProc(pathToPythonExecutable, { "..\\ViewFS_python_host.py", "--command-pipe=" + commandPipe.getFilename(),
+          pythonProc(pathToPythonExecutable, { "..\\ViewFS_python_host.py", "--fs-root=" + virtRoot.string(),
+                                                    "--command-pipe=" + commandPipe.getFilename(),
                                                     "--router-file=" + routerFile.string()})
     {
         commandPipe.waitForConnection();
     }
 
-    std::vector<std::filesystem::path> enumerateDir(const std::filesystem::path& dirPath)
+    DirEnumResult enumerateDir(const std::filesystem::path& dirPath) override
     {
         commandPipe << "list_dir\x1f" << dirPath.string() << '\n';
-        std::string result = commandPipe.readLine();
-        return mapVector<std::string, std::filesystem::path>(split(result, "\x1f"), [](const auto& strPath) { return std::filesystem::path(strPath); });
+        std::string itemRefsStr = commandPipe.readLine();
+        auto subItemPaths = mapVector<std::string, ItemRef>(split(itemRefsStr, "\x1f"),
+                                     [](const auto& strPath) { return ItemRef { .refTarget = std::filesystem::path(strPath) }; });
+        std::string subfoldersStr = commandPipe.readLine();
+        auto subfolders = mapVector<std::string, Subfolder>(split(subfoldersStr, "\x1f"),
+                                   [](const auto& folderName) { return Subfolder { .folderName = folderName }; });
+
+        return {
+            .itemRefs = subItemPaths,
+            .subfolders = subfolders
+        };
     }
 };
 

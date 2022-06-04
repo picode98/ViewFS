@@ -17,16 +17,16 @@ std::string replaceAll(const std::string &src, const std::string &key, const std
     return builder.str();
 }
 
-std::vector<std::string> split(const std::string &src, const std::string &delim) {
+std::vector<std::string> split(const std::string &src, const std::string &delim, bool keepEmpty) {
     size_t lastStart, lastEnd = 0;
     std::vector<std::string> results;
 
     while((lastStart = src.find(delim, lastEnd)) != std::string::npos)
     {
-        results.push_back(src.substr(lastEnd, lastStart - lastEnd));
+        if(lastStart - lastEnd > 0 || keepEmpty) results.push_back(src.substr(lastEnd, lastStart - lastEnd));
         lastEnd = lastStart + delim.size();
     }
 
-    results.push_back(src.substr(lastEnd));
+    if(lastEnd < src.size() || keepEmpty) results.push_back(src.substr(lastEnd));
     return results;
 }
