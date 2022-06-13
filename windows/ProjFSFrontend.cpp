@@ -39,9 +39,22 @@ ProjFSFrontend::OnDirectoryEnumerationRequested(const PRJ_CALLBACK_DATA *callbac
         std::wstring sourceFilenameWideStr = sessionState->resultSet.itemRefs[i].refTarget.filename(),
             targetWideStr = sessionState->resultSet.itemRefs[i].refTarget;
 
+        try
+        {
+            auto relPath = std::filesystem::path(callbackData->FilePathName);
+            std::wstring diskPath = std::filesystem::absolute(this->rootPath / relPath / sessionState->resultSet.itemRefs[i].refTarget.filename());
+            PRJ_FILE_STATE existingState;
+            handleWinAPIError(PrjGetOnDiskFileState(diskPath.c_str(), &existingState), false);
+            if(existingState & PRJ_FILE_STATE_PLACEHOLDER) continue;
+        }
+        catch(const WindowsException&)
+        {}
+
         PRJ_FILE_BASIC_INFO info = { FALSE, 0 };
         PRJ_EXTENDED_INFO extInfo = { .InfoType = PRJ_EXT_INFO_TYPE_SYMLINK, .NextInfoOffset = 0,
                                       .Symlink = { .TargetName = targetWideStr.c_str() } };
+
+        // std::wcerr << i << L": " << sourceFilenameWideStr << " -> " << targetWideStr << std::endl;
 
         try
         {
@@ -60,6 +73,19 @@ ProjFSFrontend::OnDirectoryEnumerationRequested(const PRJ_CALLBACK_DATA *callbac
         size_t idx = i - sessionState->resultSet.itemRefs.size();
         PRJ_FILE_BASIC_INFO info = { TRUE, 0 };
         std::wstring wideFolderName = UTF8StrToWideStr(sessionState->resultSet.subfolders[idx].folderName);
+
+        try
+        {
+            auto relPath = std::filesystem::path(callbackData->FilePathName);
+            std::wstring diskPath = std::filesystem::absolute(this->rootPath / relPath / sessionState->resultSet.subfolders[idx].folderName);
+            PRJ_FILE_STATE existingState;
+            handleWinAPIError(PrjGetOnDiskFileState(diskPath.c_str(), &existingState), false);
+            if(existingState & PRJ_FILE_STATE_PLACEHOLDER) continue;
+        }
+        catch(const WindowsException&)
+        {}
+
+        // std::wcerr << i << L": [DIR] " << wideFolderName << std::endl;
 
         try
         {
