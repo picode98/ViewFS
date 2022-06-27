@@ -9,6 +9,8 @@
 
 #include <string>
 #include <system_error>
+#include <vector>
+#include <filesystem>
 
 #ifdef UNICODE
 typedef std::wstring tstring;
@@ -51,5 +53,7 @@ inline std::string GUIDToString(const GUID& guid)
     StringFromGUID2(guid, resultBuf, 64);
     return WideStrToUTF8Str(resultBuf);
 }
+
+std::vector<std::filesystem::path> getAllHardlinks(const std::filesystem::path& destination);
 
 #endif //VIEWFS_WINUTILS_H

@@ -28,7 +28,7 @@ public:
 
     DirEnumResult enumerateDir(const std::filesystem::path& dirPath) override
     {
-        commandPipe << "list_dir\x1f" << dirPath.string() << '\n';
+        commandPipe << "list_dir\x1f" << std::filesystem::absolute(dirPath).string() << '\n';
         std::string itemRefsStr = commandPipe.readLine();
         auto subItemPaths = mapVector<std::string, ItemRef>(split(itemRefsStr, "\x1f"),
                                      [](const auto& strPath) { return ItemRef { .refTarget = std::filesystem::path(strPath) }; });

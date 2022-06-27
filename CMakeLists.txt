@@ -3,5 +3,7 @@ project(ViewFS)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(ViewFS main.cpp windows/ProjFSBase.cpp windows/WinUtils.cpp windows/NamedPipe.cpp PythonSubprocessSource.cpp PythonSubprocessSource.h windows/Subprocess.cpp windows/Subprocess.h Utils.cpp Utils.h PlatformUtils.cpp PlatformUtils.h windows/ProjFSFrontend.cpp windows/ProjFSFrontend.h)
+add_executable(ViewFS main.cpp windows/ProjFSBase.cpp windows/WinUtils.cpp windows/NamedPipe.cpp
+        PythonSubprocessSource.cpp windows/Subprocess.cpp Utils.cpp PlatformUtils.cpp windows/ProjFSFrontend.cpp
+        windows/HardlinkFrontend.cpp)
 target_link_libraries(ViewFS ProjectedFSLib.lib)

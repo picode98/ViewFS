@@ -69,3 +69,64 @@ void handleCOMError(HRESULT result)
         throw getWinAPIError(result);
     }
 }
+
+std::vector<std::filesystem::path> getAllHardlinks(const std::filesystem::path& destination)
+{
+    std::vector<std::filesystem::path> result;
+
+    wchar_t stackBuf[256];
+    DWORD neededBufSize = 256;
+
+    HANDLE enumHandle = FindFirstFileNameW(destination.c_str(), 0, &neededBufSize, stackBuf);
+    if(enumHandle == INVALID_HANDLE_VALUE)
+    {
+        if(GetLastError() == ERROR_MORE_DATA)
+        {
+            auto *heapBuf = new wchar_t[neededBufSize];
+            enumHandle = FindFirstFileNameW(destination.c_str(), 0, &neededBufSize, heapBuf);
+
+            if(enumHandle != INVALID_HANDLE_VALUE) result.emplace_back(heapBuf);
+            delete[] heapBuf;
+        }
+
+        if(enumHandle == INVALID_HANDLE_VALUE) throw getWinAPIError(GetLastError());
+    }
+    else
+    {
+        result.emplace_back(stackBuf);
+    }
+
+    BOOL nextResult = TRUE;
+    while(nextResult == TRUE)
+    {
+        neededBufSize = 256;
+        nextResult = FindNextFileNameW(enumHandle, &neededBufSize, stackBuf);
+
+        if(nextResult == 0)
+        {
+            if(GetLastError() == ERROR_MORE_DATA)
+            {
+                auto *heapBuf = new wchar_t[neededBufSize];
+                nextResult = FindNextFileNameW(enumHandle, &neededBufSize, heapBuf);
+
+                if(nextResult != 0) result.emplace_back(heapBuf);
+                delete[] heapBuf;
+            }
+            else if(GetLastError() == ERROR_HANDLE_EOF) break;
+
+            if(nextResult == 0)
+            {
+                auto error = getWinAPIError(GetLastError());
+                FindClose(enumHandle);
+                throw error;
+            }
+        }
+        else
+        {
+            result.emplace_back(stackBuf);
+        }
+    }
+
+    FindClose(enumHandle);
+    return result;
+}

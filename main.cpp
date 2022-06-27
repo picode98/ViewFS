@@ -2,6 +2,7 @@
 #include "windows/ProjFSBase.h"
 #include "windows/NamedPipe.h"
 #include "windows/ProjFSFrontend.h"
+#include "windows/HardlinkFrontend.h"
 #include "PythonSubprocessSource.h"
 
 #include <map>
@@ -84,8 +85,8 @@ int main() {
     try {
         PythonSubprocessSource dataSource(L".\\test_fs", "C:\\Program Files\\Python39\\python.exe", "..\\sample_fs_router.py");
 
-        ProjFSFrontend frontend(L".\\test_fs", dataSource);
-        frontend.startVirtualFS();
+        HardlinkFrontend frontend(L".\\test_fs", dataSource);
+        // frontend.startVirtualFS();
 
         system("pause");
     } catch(const WindowsException& ex)
